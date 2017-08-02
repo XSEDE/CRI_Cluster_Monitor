@@ -1,0 +1,21 @@
+---
+
+ - name: add openhpc repository
+   yum: name={{ openhpc_release_rpm }} state=present
+
+ - name: install ohpc-ganglia packages
+   yum: name=ohpc-ganglia state=installed
+
+ - name: check if compute image chroot exists
+
+ - name: install gmond into chroot image
+
+ - name: rebuild chroot
+
+ - name: install gmond into compute nodes
+
+ - name: configure httpd
+
+ - name: start service on headnode (gmetad)
+
+ - name: start service on computes (gmond)
