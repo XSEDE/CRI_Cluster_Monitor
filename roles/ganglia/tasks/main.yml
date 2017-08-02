@@ -6,16 +6,33 @@
  - name: install ohpc-ganglia packages
    yum: name=ohpc-ganglia state=installed
 
- - name: check if compute image chroot exists
+ - name: find relevant chroot directories
+   shell: "find /opt/ohpc/admin/images/ -maxdepth 1 -mindepth 1 -type d"
+   register: chroot_dirs
 
  - name: install gmond into chroot image
+   command: yum -y --installroot={{ item }} install ganglia-gmond-ohpc
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"
 
- - name: rebuild chroot
+ - name: add ganglia.conf to headnode
+   template: src=gmond.conf.j2 dest=/etc/ganglia/gmond.conf
 
- - name: install gmond into compute nodes
+ - name: add ganglia.conf to vnfs
+   template: src=gmond.conf.j2 dest={{item}}/etc/ganglia/gmond.conf
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"
 
- - name: configure httpd
+ - name: rebuild the vnfs 
+   command: wwvnfs -y --chroot "{{ item }}"
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"
 
- - name: start service on headnode (gmetad)
+ - fail: 
+     msg: "CHECK THAT THE TEMPLATING WORKED"
 
- - name: start service on computes (gmond)
+# - name: configure httpd
+#
+# - name: start service on headnode (gmetad)
+#
+# - name: start service on computes (gmond)
