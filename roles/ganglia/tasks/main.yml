@@ -6,6 +6,9 @@
  - name: install ohpc-ganglia packages
    yum: name=ohpc-ganglia state=installed
 
+ - name: sync files
+   command: wwsh file sync
+
  - name: find relevant chroot directories
    shell: "find /opt/ohpc/admin/images/ -maxdepth 1 -mindepth 1 -type d"
    register: chroot_dirs
@@ -15,10 +18,13 @@
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
 
- - name: add ganglia.conf to headnode
+ - name: add gmetad.conf to headnode
+   template: src=gmetad.conf.j2 dest=/etc/ganglia/gmetad.conf
+
+ - name: add gmond.conf to headnode
    template: src=gmond.conf.j2 dest=/etc/ganglia/gmond.conf
 
- - name: add ganglia.conf to vnfs
+ - name: add gmond.conf to vnfs
    template: src=gmond.conf.j2 dest={{item}}/etc/ganglia/gmond.conf
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
@@ -28,11 +34,50 @@
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
 
- - fail: 
-     msg: "CHECK THAT THE TEMPLATING WORKED"
+ - name: allow httpd to network connect
+   seboolean: name=httpd_can_network_connect state=yes persistent=yes
+
+ - name: add ganglia to firewalld services
+   template: src=ganglia.xml dest=/etc/firewalld/services/ganglia.xml
+
+ - name: add ganglia to internal zone
+   firewalld:
+     zone: internal
+     service: "ganglia"
+     permanent: yes
+     immediate: yes
+     state: enabled
 
 # - name: configure httpd
+#   template: src=httpd.conf.j2 dest=/etc/httpd/conf/httpd.conf
 #
-# - name: start service on headnode (gmetad)
 #
-# - name: start service on computes (gmond)
+# - name: restart httpd
+#
+ - name: start service on headnode (gmetad)
+   service: name=gmetad state=restarted enabled=yes
+
+ - name: start service on headnode (gmond)
+   service: name=gmond state=restarted enabled=yes
+
+ - name: get compute node names (wwsh)
+   shell: wwsh node list | tail -n +3 | awk '{print $1}'
+   register: node_name_list
+
+ - name: reboot computes (wwsh)
+   command: ssh {{ item }} "reboot"
+   with_items:
+     - "{{ node_name_list.stdout_lines }}"
+   ignore_errors: yes #since you get a 'connection closed by remote host'
+
+ - name: wait for nodes to reboot
+   pause: prompt="Hit ENTER to continue once all compute nodes have rebooted with the new image!" 
+
+ - name: get compute node names2 (wwsh)
+   shell: wwsh node list | tail -n +3 | awk '{print $1}'
+   register: node_name_list
+
+ - name: start and enable service on computes (gmond)
+   command: ssh {{ item }} 'systemctl enable gmond && systemctl start gmond'
+   with_items:
+     - "{{ node_name_list.stdout_lines }}"
