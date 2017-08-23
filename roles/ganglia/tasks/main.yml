@@ -29,6 +29,13 @@
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
 
+ - name: create /var/lib/ganglia in vnfs
+   file: 
+     path: "{{ item }}/var/lib/ganglia" 
+     state: directory 
+     owner: ganglia 
+     group: ganglia
+
  - name: rebuild the vnfs 
    command: wwvnfs -y --chroot "{{ item }}"
    with_items:
