@@ -1,0 +1,38 @@
+---
+
+ - name: install prerequisites
+   yum: 
+     name: "{{ item }}"
+     state: installed
+   with_items:
+     - "cronie"
+     - "gmp-devel"
+     - "httpd"
+     - "java-1.7.0-openjdk"
+     - "java-1.7.0-openjdk-devel"
+     - "logrotate"
+     - "mariadb"
+     - "mariadb-server"
+     - "php"
+     - "php-cli"
+     - "php-gd"
+     - "php-gmp"
+     - "php-mcrypt"
+     - "php-mysql"
+     - "php-pdo"
+     - "php-pear-Log"
+     - "php-pear-MDB2"
+     - "php-pear-MDB2-Driver-mysql"
+     - "php-xml"
+     - "bzip2"
+
+ - name: get phantomJS
+   unarchive: src="https://bitbucket.org/ariya/phantomjs/downloads/phantomjs-2.1.1-linux-x86_64.tar.bz2" dest="/tmp/" remote_src=yes
+   
+
+ - name: install phantomJS
+   copy: src="/tmp/phantomjs-2.1.1-linux-x86_64/bin/phantomjs" dest="/usr/local/bin/phantomjs" owner=root group=root mode=0755
+   
+
+ - name: install rpm from source
+   yum: name="https://github.com/ubccr/xdmod/releases/download/v6.6.0/xdmod-6.6.0-1.0.el7.centos.noarch.rpm" state=installed
