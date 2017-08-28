@@ -6,3 +6,23 @@
   headnode_private_ip: "10.0.0.1"
   chroot_loc: "/opt/ohpc/admin/images/"
   ganglia_grid_name: "ExampleSite"
+
+  xdmod_version: 6.6.0
+
+  slurm_cluster_name: "xcbc-example" #for OpenXDMoD to parse SLURM accounting
+  xdmod_long_cluster_name: "XCBC Example Cluster Build"
+
+  xdmod_num_nodes: 2
+  xdmod_num_procs: 2
+
+  xdmod_orgname: "XSEDE Capabilities and Resource Integration"
+  xdmod_org_abbr: "XCRI"
+
+  xdmod_address: "http://localhost:8080/"
+  xdmod_contact_email: "jecoulte@iu.edu" #please change this!
+  xdmod_admin_email: "jecoulte@iu.edu"
+
+  xdmod_logo_path: "" #blank for now
+  xdmod_logo_width: "" #blank for now
+
+  xdmod_db_pass: "xdmod+xcri_rocks"
