@@ -36,3 +36,6 @@
 
  - name: install rpm from source
    yum: name="https://github.com/ubccr/xdmod/releases/download/v6.6.0/xdmod-6.6.0-1.0.el7.centos.noarch.rpm" state=installed
+
+ - name: ensure mariadb is running
+   service: name=mariadb state=started enabled=yes
