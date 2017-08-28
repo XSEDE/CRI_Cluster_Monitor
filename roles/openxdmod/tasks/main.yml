@@ -33,9 +33,66 @@
  - name: install phantomJS
    copy: src="/tmp/phantomjs-2.1.1-linux-x86_64/bin/phantomjs" dest="/usr/local/bin/phantomjs" owner=root group=root mode=0755
    
+ - name: get timezone
+   shell: timedatectl status | grep 'Time zone:' | awk '{print $3}'
+   register: php_parsable_timezone
+
+ - debug:
+     var: php_parsable_timezone
+
+ - name: set php timezone
+   lineinfile: 
+     path: /etc/php.ini
+     regexp: "^;date.timezone"
+     line: 'date.timezone=({{ item }})'
+     state: present
+   with_items:
+     - "{{ php_parsable_timezone.stdout_lines }}"
 
  - name: install rpm from source
    yum: name="https://github.com/ubccr/xdmod/releases/download/v6.6.0/xdmod-6.6.0-1.0.el7.centos.noarch.rpm" state=installed
 
  - name: ensure mariadb is running
    service: name=mariadb state=started enabled=yes
+
+ - name: xdmod httpd conf
+   template: src=xdmod.conf dest=/etc/httpd/conf.d/xdmod.conf
+
+ - name: xdmod portal settings template
+   template: src=portal_settings.ini.j2 dest=/etc/xdmod/portal_settings.ini
+
+ - name: xdmod resources template
+   template: src=resources.json.j2 dest=/etc/xdmod/resources.json
+
+ - name: xdmod resource specs template
+   template: src=resource_specs.json.j2 dest=/etc/xdmod/resource_specs.json
+
+ - name: xdmod organization template
+   template: src=organization.json.j2 dest=/etc/xdmod/organization.json
+
+ - name: xdmod auto update template
+   template: src=update_check.json.j2 dest=/etc/xdmod/update_check.json
+
+ - name: shred slurm records
+   command: xdmod-slurm-helper -r {{ slurm_cluster_name }}
+
+ - name: ingest slurm records
+   command: xdmod-ingestor
+
+ - name: create xdmod shred cron job
+   cron:
+     hour: 0
+     minute: 10
+     state: present
+     job: "xdmod-slurm-helper -r {{ slurm_cluster_name }}"
+
+ - name: create xdmod ingestor cron job
+   cron:
+     hour: 0
+     minute: 30
+     state: present
+     job: "xdmod-ingestor"
+
+ - name: reload httpd
+   service: name=httpd state=restarted enabled=yes
+
