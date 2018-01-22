@@ -3,5 +3,5 @@
  - hosts: headnode
    roles:
 
-#   - {role: ganglia, tags: ganglia} #temporarily commented while working on openxdmod
+   - {role: ganglia, tags: ganglia} #temporarily commented while working on openxdmod
    - {role: openxdmod, tags: openxdmod}
