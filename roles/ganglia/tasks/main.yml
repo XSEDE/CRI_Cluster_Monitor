@@ -35,6 +35,8 @@
      state: directory 
      owner: ganglia 
      group: ganglia
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"
 
  - name: rebuild the vnfs 
    command: wwvnfs -y --chroot "{{ item }}"
@@ -46,6 +48,9 @@
 
  - name: add ganglia to firewalld services
    template: src=ganglia.xml dest=/etc/firewalld/services/ganglia.xml
+
+ - name: reload firewalld
+   command: firewall-cmd --reload
 
  - name: add ganglia to internal zone
    firewalld:
