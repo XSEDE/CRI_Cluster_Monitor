@@ -13,6 +13,7 @@
      - "logrotate"
      - "mariadb"
      - "mariadb-server"
+     - "MySQL-python"
      - "php"
      - "php-cli"
      - "php-gd"
@@ -72,6 +73,23 @@
 
  - name: xdmod auto update template
    template: src=update_check.json.j2 dest=/etc/xdmod/update_check.json
+
+#Need to build the database stuff here!
+ - name: initialize xdmod databases
+   mysql_db:
+     name: "{{ item | basename | regex_replace('.sql','') }}"
+     state: import
+     target: "{{ item }}"
+   with_fileglob:
+     - /usr/share/xdmod/db/schema/*
+     - /usr/share/xdmod/db/data/*
+
+ - name: create db user
+   mysql_user:
+     name: "xdmod"
+     password: "{{ xdmod_db_pass }}"
+     priv: "mod_hpcdb.*:ALL/mod_logger.*:ALL/mod_shredder.*:ALL/moddb.*:ALL/modw.*:ALL/modw_aggregates.*:ALL/modw_filters.*:ALL"
+     state: present
 
  - name: shred slurm records
    command: xdmod-slurm-helper -r {{ slurm_cluster_name }}
