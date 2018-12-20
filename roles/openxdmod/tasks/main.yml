@@ -98,7 +98,7 @@
      - xdmod.jobs-xdw-bootstrap.table-create
      - xdmod.xdb-bootstrap.xdb-table-create
      - xdmod.shredder-bootstrap.create-tables
- #    - xdmod.shredder-bootstrap.create-slurm-table
+     - xdmod.shredder-bootstrap.create-slurm-table # This will fail the 2nd time around!
      - xdmod.hpcdb-bootstrap.create-tables
      - xdmod.hpcdb-bootstrap.create-views
  #    - xdmod.xdw-bootstrap-storage.create-tables - this one fails due to missing destination in config?
