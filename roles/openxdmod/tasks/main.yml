@@ -56,8 +56,8 @@
  - name: ensure mariadb is running
    service: name=mariadb state=started enabled=yes
 
- - name: xdmod httpd conf
-   template: src=xdmod.conf dest=/etc/httpd/conf.d/xdmod.conf
+# - name: xdmod httpd conf
+#   template: src=xdmod.conf dest=/etc/httpd/conf.d/xdmod.conf
 
  - name: xdmod portal settings template
    template: src=portal_settings.ini.j2 dest=/etc/xdmod/portal_settings.ini
@@ -92,16 +92,14 @@
      state: present
 
  - name: populate xdmod databases with tables
-   command: /usr/share/xdmod/tools/etl/etl_overseer.php -a {{ item }}
+   command: /usr/share/xdmod/tools/etl/etl_overseer.php -p {{ item }}
    loop: 
-     - xdmod.staging-bootstrap.create-tables   
-     - xdmod.jobs-xdw-bootstrap.table-create
-     - xdmod.xdb-bootstrap.xdb-table-create
-     - xdmod.shredder-bootstrap.create-tables
-     - xdmod.shredder-bootstrap.create-slurm-table # This will fail the 2nd time around!
-     - xdmod.hpcdb-bootstrap.create-tables
-     - xdmod.hpcdb-bootstrap.create-views
- #    - xdmod.xdw-bootstrap-storage.create-tables - this one fails due to missing destination in config?
+     - xdmod.hpcdb-bootstrap
+     - xdmod.jobs-xdw-bootstrap
+     - xdmod.shredder-bootstrap
+     - xdmod.staging-bootstrap
+     - xdmod.xdb-bootstrap
+     #- xdmod.xdw-bootstrap-storage
 
  - name: initialize acls
    command: acl-xdmod-management
