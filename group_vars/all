@@ -4,8 +4,13 @@
 #The full list of available versions for CentOS can be generated via
 # curl -s https://github.com/openhpc/ohpc/releases/ | grep rpm | grep -v sle | grep -v strong  | sed 's/.*="\(.*\)".*".*".*/\1/'
   headnode_private_ip: "10.0.0.1"
+  headnode_public_ip: "192.168.56.5"
   chroot_loc: "/opt/ohpc/admin/images/"
+
   ganglia_grid_name: "ExampleSite"
+  ganglia_public_name: "ganglia.localdomain"
+
+  xdmod_public_name: "open-xdmod.localdomain"
 
   xdmod_version: 8.0.0
   xdmod_url: "https://github.com/ubccr/xdmod/releases/download/v8.0.0/xdmod-8.0.0-1.0.el7.noarch.rpm"
@@ -19,7 +24,7 @@
   xdmod_orgname: "XSEDE Capabilities and Resource Integration"
   xdmod_org_abbr: "XCRI"
 
-  xdmod_address: "http://localhost:8080/"
+  xdmod_address: "http://localhost:443/"
   xdmod_contact_email: "jecoulte@iu.edu" #please change this!
   xdmod_admin_email: "jecoulte@iu.edu"
 

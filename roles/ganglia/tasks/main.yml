@@ -60,7 +60,9 @@
      immediate: yes
      state: enabled
 
-# - name: configure httpd
+ - name: ganglia httpd conf
+   template: src=ganglia-ohpc.conf.j2 dest=/etc/httpd/conf.d/ganglia-ohpc.conf
+
 #   template: src=httpd.conf.j2 dest=/etc/httpd/conf/httpd.conf
 #
 #
