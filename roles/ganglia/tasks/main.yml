@@ -18,6 +18,11 @@
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
 
+ - name: enable gmond in vnfs 
+   command: chroot '{{ item }}' systemctl enable gmond
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"
+
  - name: add gmetad.conf to headnode
    template: src=gmetad.conf.j2 dest=/etc/ganglia/gmetad.conf
 
@@ -87,11 +92,11 @@
  - name: wait for nodes to reboot
    pause: prompt="Hit ENTER to continue once all compute nodes have rebooted with the new image!" 
 
- - name: get compute node names2 (wwsh)
-   shell: wwsh node list | tail -n +3 | awk '{print $1}'
-   register: node_name_list
-
- - name: start and enable service on computes (gmond)
-   command: ssh {{ item }} 'systemctl enable gmond && systemctl start gmond'
-   with_items:
-     - "{{ node_name_list.stdout_lines }}"
+# - name: get compute node names2 (wwsh)
+#   shell: wwsh node list | tail -n +3 | awk '{print $1}'
+#   register: node_name_list
+#
+# - name: start and enable service on computes (gmond)
+#   command: ssh {{ item }} 'systemctl enable gmond && systemctl start gmond'
+#   with_items:
+#     - "{{ node_name_list.stdout_lines }}"
