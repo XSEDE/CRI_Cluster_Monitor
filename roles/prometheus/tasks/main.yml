@@ -11,6 +11,15 @@
  - name: ensure prometheus is running
    service: name=prometheus state=started enabled=yes
 
+ - name: get compute node ip addresses (wwsh)
+   shell: wwsh node list | tail -n +3 | awk '{print $3":9100"}' | sed 's@^\(.*\)$@\"\1\"@' | tr '\n' ','
+   register: node_name_list
+   #   shell: wwsh node list | tail -n +3 | awk '{print "$3:9100"}'
+
+ - name: find relevant chroot directories
+   shell: "find /opt/ohpc/admin/images/ -maxdepth 1 -mindepth 1 -type d"
+   register: chroot_dirs
+
  - name: prometheus prometheus.conf
    template: src=prometheus.yml dest=/etc/prometheus/prometheus.yml
 
