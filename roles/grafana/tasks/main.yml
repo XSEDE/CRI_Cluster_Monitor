@@ -1,7 +1,7 @@
 ---
 
  - name: install grafana packages
-   yum: name=Grafana state=installed
+   yum: name=grafana state=installed
 
 # - name: sync files #may not be needed.  Artifact from ganglia
 #   command: wwsh file sync
