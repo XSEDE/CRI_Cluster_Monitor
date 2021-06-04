@@ -5,3 +5,17 @@
 
    - {role: ganglia, tags: ganglia} #temporarily commented while working on openxdmod
    - {role: openxdmod, tags: openxdmod}
+
+
+---
+- hosts: all
+  roles:
+  - cloudalchemy.prometheus
+  vars:
+    prometheus_targets:
+      node:
+      - targets:
+        - localhost:9100
+        -                      # Need to list compute targets here:9100
+        labels:
+          env: demosite
