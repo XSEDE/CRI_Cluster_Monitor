@@ -26,3 +26,11 @@
    command: chroot '{{ item }}' systemctl enable node_exporter
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
+
+- name: add prometheus to internal zone
+  firewalld:
+    zone: internal
+    service: "prometheus"
+    permanent: yes
+    immediate: yes
+    state: enabled

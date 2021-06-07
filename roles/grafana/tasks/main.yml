@@ -15,24 +15,16 @@
  - name: reload firewalld
    command: firewall-cmd --reload
 
- - name: add ganglia to internal zone
+ - name: add grafana to external zone
    firewalld:
-     zone: internal
-     service: "ganglia"
+     zone: external
+     service: "grafana"
      permanent: yes
      immediate: yes
      state: enabled
 
- - name: ganglia httpd conf
-   template: src=ganglia-ohpc.conf.j2 dest=/etc/httpd/conf.d/ganglia-ohpc.conf
-
-#   template: src=httpd.conf.j2 dest=/etc/httpd/conf/httpd.conf
-#
-#
-# - name: restart httpd
-#
- - name: start service on headnode (gmetad)
-   service: name=gmetad state=restarted enabled=yes
+ - name: start service on headnode (grafana-server)
+   service: name=grafana-server state=restarted enabled=yes
 
  - name: start service on headnode (gmond)
    service: name=gmond state=restarted enabled=yes
