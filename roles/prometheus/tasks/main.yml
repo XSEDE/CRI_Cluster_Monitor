@@ -1,0 +1,28 @@
+---
+
+ - name: install prerequisites
+   yum:
+     name: "{{ item }}"
+     state: installed
+   with_items:
+     - "glibc"
+     - "golang-github-prometheus"
+
+ - name: ensure prometheus is running
+   service: name=prometheus state=started enabled=yes
+
+ - name: prometheus prometheus.conf
+   template: src=prometheus.yml dest=/etc/prometheus/prometheus.yml
+
+ - name: rules node_exporter_recording_rules.yml
+   template: src=node_exporter_recording_rules.yml dest=/etc/prometheus/node_exporter_recording_rules.yml
+
+ - name: install node_exporter into chroot image
+   command: yum -y --installroot={{ item }} install golang-github-prometheus-node-exporter
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"
+
+ - name: enable node_exporter in vnfs
+   command: chroot '{{ item }}' systemctl enable node_exporter
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"

@@ -18,7 +18,7 @@
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
 
- - name: enable gmond in vnfs 
+ - name: enable gmond in vnfs
    command: chroot '{{ item }}' systemctl enable gmond
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
@@ -35,15 +35,15 @@
      - "{{ chroot_dirs.stdout_lines }}"
 
  - name: create /var/lib/ganglia in vnfs
-   file: 
-     path: "{{ item }}/var/lib/ganglia" 
-     state: directory 
-     owner: ganglia 
+   file:
+     path: "{{ item }}/var/lib/ganglia"
+     state: directory
+     owner: ganglia
      group: ganglia
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
 
- - name: rebuild the vnfs 
+ - name: rebuild the vnfs
    command: wwvnfs -y --chroot "{{ item }}"
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
@@ -90,7 +90,7 @@
    ignore_errors: yes #since you get a 'connection closed by remote host'
 
  - name: wait for nodes to reboot
-   pause: prompt="Hit ENTER to continue once all compute nodes have rebooted with the new image!" 
+   pause: prompt="Hit ENTER to continue once all compute nodes have rebooted with the new image!"
 
 # - name: get compute node names2 (wwsh)
 #   shell: wwsh node list | tail -n +3 | awk '{print $1}'

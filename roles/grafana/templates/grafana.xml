@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<service>
+  <short>Grafana</short>
+  <description> Grafana is a visualization software, providing a web frontend,
+  which displays basic information gathered from Prometheus on the current state
+  of the cluster hardware. This profile provides a firewall hole for
+  communication between the Grafana webpage and interested parties.
+  </description>
+  <port protocol="tcp" port="3000"/>
+</service>
