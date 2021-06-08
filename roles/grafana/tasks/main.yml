@@ -23,11 +23,17 @@
      immediate: yes
      state: enabled
 
+ - name: add datasource to Grafana
+   template: src=datasource.yaml dest=/etc/grafana/provisioning/datasources/datasource.yaml
+
+ - name: add dashboard config file to grafana
+   template: src=dashboard.yaml dest=/etc/grafana/provisioning/dashboards/dashboard.yaml
+
+ - name: add dashboard json to Grafana
+   template: src=dashboard.json dest=/var/lib/grafana/dashboards/dashboard.json
+
  - name: start service on headnode (grafana-server)
    service: name=grafana-server state=restarted enabled=yes
-
- - name: start service on headnode (gmond)
-   service: name=gmond state=restarted enabled=yes
 
  - name: get compute node names (wwsh)
    shell: wwsh node list | tail -n +3 | awk '{print $1}'
