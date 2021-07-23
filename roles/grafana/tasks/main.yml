@@ -29,8 +29,15 @@
  - name: add dashboard config file to grafana
    template: src=dashboard.yaml dest=/etc/grafana/provisioning/dashboards/dashboard.yaml
 
+ - name: create dashboads dir
+   file: 
+     state: directory
+     path: /var/lib/grafana/dashboards
+     owner: grafana
+     group: grafana
+
  - name: add dashboard json to Grafana
-   template: src=dashboard.json dest=/var/lib/grafana/dashboards/dashboard.json
+   copy: src=dashboard.json dest=/var/lib/grafana/dashboards/dashboard.json
 
  - name: start service on headnode (grafana-server)
    service: name=grafana-server state=restarted enabled=yes
