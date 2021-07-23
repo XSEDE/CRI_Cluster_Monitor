@@ -27,4 +27,4 @@ scrape_configs:
     # scheme defaults to 'http'.
 
     static_configs:
-    - targets: [{{ node_name_list.stdout_lines[0]| trim(chars=",") }}]
+            - targets: [{{ node_name_list.stdout_lines[0][:-1] }}]
