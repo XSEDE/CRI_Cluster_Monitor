@@ -3,9 +3,6 @@
  - name: install grafana packages
    yum: name=grafana state=installed
 
-# - name: sync files #may not be needed.  Artifact from ganglia
-#   command: wwsh file sync
-
 #- name: allow httpd to network connect  #Verify that grafana works without stuffs.  If not, check getsebool.
 #   seboolean: name=httpd_can_network_connect state=yes persistent=yes
 
@@ -42,19 +39,21 @@
  - name: start service on headnode (grafana-server)
    service: name=grafana-server state=restarted enabled=yes
 
- - name: get compute node names (wwsh)
-   shell: wwsh node list | tail -n +3 | awk '{print $1}'
-   register: node_name_list
-
- - name: reboot computes (wwsh)
-   command: ssh {{ item }} "reboot"
-   with_items:
-     - "{{ node_name_list.stdout_lines }}"
-   ignore_errors: yes #since you get a 'connection closed by remote host'
-
- - name: wait for nodes to reboot
-   pause: prompt="Hit ENTER to continue once all compute nodes have rebooted with the new image!"
-
+   # Why do we need to reboot the compute nodes for Grafana, if it just runs on headnode
+   #  and grabs from Prometheus?
+   # - name: get compute node names (wwsh)
+   #   shell: wwsh node list | tail -n +3 | awk '{print $1}'
+   #   register: node_name_list
+   #
+   # - name: reboot computes (wwsh)
+   #   command: ssh {{ item }} "reboot"
+   #   with_items:
+   #     - "{{ node_name_list.stdout_lines }}"
+   #   ignore_errors: yes #since you get a 'connection closed by remote host'
+   #
+   # - name: wait for nodes to reboot
+   #   pause: prompt="Hit ENTER to continue once all compute nodes have rebooted with the new image!"
+   #
 # - name: get compute node names2 (wwsh)
 #   shell: wwsh node list | tail -n +3 | awk '{print $1}'
 #   register: node_name_list
