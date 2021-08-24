@@ -8,6 +8,14 @@
      - "glibc"
      - "golang-github-prometheus"
 
+ - name: add prometheus to internal zone
+   firewalld:
+     zone: internal
+     service: "prometheus"
+     permanent: yes
+     immediate: yes
+     state: enabled
+
  - name: ensure prometheus is running
    service: name=prometheus state=started enabled=yes
 
@@ -16,15 +24,35 @@
    register: node_name_list
    #   shell: wwsh node list | tail -n +3 | awk '{print "$3:9100"}'
 
- - name: find relevant chroot directories
-   shell: "find /opt/ohpc/admin/images/ -maxdepth 1 -mindepth 1 -type d"
-   register: chroot_dirs
+ - debug:
+     var: node_name_list
 
  - name: prometheus prometheus.conf
    template: src=prometheus.yml dest=/etc/prometheus/prometheus.yml
 
  - name: rules node_exporter_recording_rules.yml
    template: src=node_exporter_recording_rules.yml dest=/etc/prometheus/node_exporter_recording_rules.yml
+
+ - name: create node_exporter user on headnode
+   user:
+     name: node_exporter
+     shell: /bin/nologin
+     system: yes
+
+ - name: Warewulf file sync
+   shell: wwsh file sync
+
+ - name: find relevant chroot directories
+   shell: "find /opt/ohpc/admin/images/ -maxdepth 1 -mindepth 1 -type d"
+   register: chroot_dirs
+
+ - name: sync headnode passwd with vnfs
+   copy:
+     src: /etc/passwd
+     dest: "{{ item }}/etc/passwd"
+     remote_src: yes
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"
 
  - name: install node_exporter into chroot image
    command: yum -y --installroot={{ item }} install golang-github-prometheus-node-exporter
@@ -35,11 +63,3 @@
    command: chroot '{{ item }}' systemctl enable node_exporter
    with_items:
      - "{{ chroot_dirs.stdout_lines }}"
-
- - name: add prometheus to internal zone
-   firewalld:
-     zone: internal
-     service: "prometheus"
-     permanent: yes
-     immediate: yes
-     state: enabled

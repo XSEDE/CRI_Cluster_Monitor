@@ -1,0 +1,23 @@
+---
+
+ - name: get compute node names (wwsh)
+   shell: wwsh node list | tail -n +3 | awk '{print $1}'
+   register: node_name_list
+
+ - name: find relevant chroot directories
+   shell: "find /opt/ohpc/admin/images/ -maxdepth 1 -mindepth 1 -type d"
+   register: chroot_dirs
+
+ - name: rebuild vnfs images
+   command: wwvnfs --chroot={{ item }}
+   with_items:
+     - "{{ chroot_dirs.stdout_lines }}"
+
+ - name: reboot computes (ssh)
+   command: ssh {{ item }} "reboot"
+   with_items:
+     - "{{ node_name_list.stdout_lines }}"
+   ignore_errors: yes #since you get a 'connection closed by remote host'
+
+ - name: wait for nodes to reboot
+   pause: prompt="Hit ENTER to continue once all compute nodes have rebooted with the new image!"
