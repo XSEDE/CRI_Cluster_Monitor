@@ -8,7 +8,10 @@ This includes ansible scripts to install Grafana, Prometheus and SLURM exporter 
 
 ## How to install
 
-ansible-playbook --extra-vars "host=head-node-ip" clustermon.yml
+        python3.6 -m venv ENV
+        source ENV/bin/activate
+        pip install -r requirements.txt
+        ansible-playbook --extra-vars "host=head-node-ip" clustermon.yml
 
 
 This work supported by [![NSF-1548562](https://img.shields.io/badge/NSF-1548562-blue.svg)](https://nsf.gov/awardsearch/showAward?AWD_ID=1548562)
