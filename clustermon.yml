@@ -1,8 +1,7 @@
 ---
 
- - hosts: headnode
+ - hosts: '{{ host }}'
    roles:
 
    - {role: grafana, tags: grafana}
    - {role: prometheus, tags: prometheus}
-   - {role: vnfs_rebuild, tags: prometheus}

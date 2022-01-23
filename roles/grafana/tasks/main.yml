@@ -1,17 +1,20 @@
 ---
 
  - name: install grafana packages
-   yum: name=grafana state=installed
+   package: pkg=grafana state=installed
+   become: yes
 
 #- name: allow httpd to network connect  #Verify that grafana works without stuffs.  If not, check getsebool.
 #   seboolean: name=httpd_can_network_connect state=yes persistent=yes
 
  - name: add grafana to firewalld services
    template: src=grafana.xml dest=/etc/firewalld/services/grafana.xml
+   become: yes
 
  - name: reload firewalld
    command: firewall-cmd --reload
-
+   become: yes
+ 
  - name: add grafana to external zone
    firewalld:
      zone: external
@@ -19,12 +22,24 @@
      permanent: yes
      immediate: yes
      state: enabled
+   become: yes
+
+ - name: Open port 3000
+   firewalld:
+     zone: public
+     permanent: yes
+     immediate: yes
+     state: enabled
+     port: "3000/tcp"
+   become: yes
 
  - name: add datasource to Grafana
    template: src=datasource.yaml dest=/etc/grafana/provisioning/datasources/datasource.yaml
+   become: yes
 
  - name: add dashboard config file to grafana
    template: src=dashboard.yaml dest=/etc/grafana/provisioning/dashboards/dashboard.yaml
+   become: yes
 
  - name: create dashboads dir
    file: 
@@ -32,12 +47,19 @@
      path: /var/lib/grafana/dashboards
      owner: grafana
      group: grafana
+   become: yes
 
  - name: add dashboard json to Grafana
-   copy: src=dashboard.json dest=/var/lib/grafana/dashboards/dashboard.json
+   copy: 
+    src: dashboard.json
+    dest: /usr/share/grafana/public/dashboards/home.json
+    owner: grafana
+    group: grafana
+   become: yes
 
  - name: start service on headnode (grafana-server)
    service: name=grafana-server state=restarted enabled=yes
+   become: yes
 
    # Why do we need to reboot the compute nodes for Grafana, if it just runs on headnode
    #  and grabs from Prometheus?

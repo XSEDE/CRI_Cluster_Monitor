@@ -1,13 +1,16 @@
 ---
 
  - name: install prerequisites
-   yum:
-     name: "{{ item }}"
+    
+   package:
+     pkg: "{{ item }}"
      state: installed
    with_items:
      - "glibc"
+     - golang
      - "golang-github-prometheus"
-
+   become: yes
+ 
  - name: add prometheus to internal zone
    firewalld:
      zone: internal
@@ -15,51 +18,74 @@
      permanent: yes
      immediate: yes
      state: enabled
+   become: yes
 
- - name: ensure prometheus is running
-   service: name=prometheus state=started enabled=yes
+ - name: Open port 9090
+   firewalld:
+     zone: public
+     permanent: yes
+     immediate: yes
+     state: enabled
+     port: "9090/tcp"
+   become: yes
 
- - name: get compute node ip addresses (wwsh)
-   shell: wwsh node list | tail -n +3 | awk '{print $3":9100"}' | sed 's@^\(.*\)$@\"\1\"@' | tr '\n' ','
-   register: node_name_list
-   #   shell: wwsh node list | tail -n +3 | awk '{print "$3:9100"}'
+ - name: reload firewalld
+   command: firewall-cmd --reload
+   become: yes
 
- - debug:
-     var: node_name_list
+ - name: Make prometheus port exposed to all host
+   replace:
+     path: /etc/sysconfig/prometheus
+     regexp: 'WEB_LISTEN_ADDRESS=127.0.0.1'
+     replace: 'WEB_LISTEN_ADDRESS=0.0.0.0'
+   become: yes
 
  - name: prometheus prometheus.conf
    template: src=prometheus.yml dest=/etc/prometheus/prometheus.yml
+   become: yes
 
- - name: rules node_exporter_recording_rules.yml
-   template: src=node_exporter_recording_rules.yml dest=/etc/prometheus/node_exporter_recording_rules.yml
+ - name: ensure prometheus is running
+   service: name=prometheus state=restarted enabled=yes
+   become: yes
 
- - name: create node_exporter user on headnode
-   user:
-     name: node_exporter
-     shell: /bin/nologin
-     system: yes
+ - name: Checking out prometheous slurm exporter source code
+   git:
+     repo: https://github.com/DImuthuUpe/prometheus-slurm-exporter
+     dest: /opt/prometheus-slurm-exporter
+     version: master
+   become: yes
 
- - name: Warewulf file sync
-   shell: wwsh file sync
+ - name: Download golang dependencies
+   command: go mod download
+   args:
+     chdir: /opt/prometheus-slurm-exporter
+   become: yes
 
- - name: find relevant chroot directories
-   shell: "find /opt/ohpc/admin/images/ -maxdepth 1 -mindepth 1 -type d"
-   register: chroot_dirs
+ - name: Build prometheous node exporter
+   command:  go build -o bin/prometheus-slurm-exporter
+   args:
+     chdir: /opt/prometheus-slurm-exporter
+   become: yes
 
- - name: sync headnode passwd with vnfs
-   copy:
-     src: /etc/passwd
-     dest: "{{ item }}/etc/passwd"
-     remote_src: yes
-   with_items:
-     - "{{ chroot_dirs.stdout_lines }}"
+ - name: Stop slurm exporter service if running
+   service: name=prometheus-slurm-exporter state=stopped
+   become: yes
+   ignore_errors: yes
 
- - name: install node_exporter into chroot image
-   command: yum -y --installroot={{ item }} install golang-github-prometheus-node-exporter
-   with_items:
-     - "{{ chroot_dirs.stdout_lines }}"
+ - name: Copy prometheus-slurm-exporter binary to /usr/bin
+   command:  cp bin/prometheus-slurm-exporter /usr/bin/prometheus-slurm-exporter
+   args:
+     chdir: /opt/prometheus-slurm-exporter
+   become: yes
 
- - name: enable node_exporter in vnfs
-   command: chroot '{{ item }}' systemctl enable node_exporter
-   with_items:
-     - "{{ chroot_dirs.stdout_lines }}"
+ - name: Copy slurm exporter service file
+   template: src=prometheus-slurm-exporter.service.j2 dest=/usr/lib/systemd/system/prometheus-slurm-exporter.service
+   become: yes
+
+ - name: Reload systemd
+   command: systemctl daemon-reload
+   become: yes
+
+ - name: Start slurm exporter service
+   service: name=prometheus-slurm-exporter state=restarted enabled=yes
+   become: yes
